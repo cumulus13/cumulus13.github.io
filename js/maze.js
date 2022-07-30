@@ -87,6 +87,18 @@ var tvmazeApi = {
       });
   },
 
+  getShowEpisode(id) {
+    return $.get({
+      url: `${this.baseUrl}/episodes/${id}?embed=show`
+    })
+      .done((res) => {
+        console.log(res);
+      })
+      .fail((err) => {
+        console.log(err);
+      });
+  },
+
   getShowSeasons(id) {
     return $.get({
       url: `${this.baseUrl}/shows/${id}/seasons`
@@ -222,20 +234,33 @@ var search = {
 
     console.log("Object.keys(result).length = ", Object.keys(result).length);
     if (Object.keys(result).length > 0) {
-      console.log("result1 = ", result);      
-      console.log("result2 = ", result['43']);      
-      console.log("result3 = ", Object.keys(result)[0]);      
+      // console.log("result1 = ", result);      
+      // console.log("result2 = ", result['43']);      
+      // console.log("result3 = ", Object.keys(result)[0]);      
       for (u=0;u<10;u++) {
       // for (mid in result) {
         mid = Object.keys(result)[u];
-        console.log("result4 = ", Object.keys(result)[u]);      
-        console.log("value = ", result[Object.keys(result)[u]]);
+        // console.log("result4 = ", Object.keys(result)[u]);      
+        // console.log("value = ", result[Object.keys(result)[u]]);
         console.log("mid = ", mid);
         let item = await tvmazeApi.getShow(mid);
+        let episode = "0";
+        try {
+          let episodes = await tvmazeApi.getShowEpisode(mid);
+          console.log("episodes = ", episodes);
+
+          episode = episodes.number;
+          
+        } catch {
+          episode = "0";
+        }
+
+        console.log("episode = ", episode);
+        
         let image = "";
         let image_large = "";
-        console.log("item = ", item);
-        console.log("item.id = ", item.id);
+        // console.log("item = ", item);
+        // console.log("item.id = ", item.id);
         
            //description start
               
@@ -284,7 +309,7 @@ var search = {
           div3.append(div6).append(div7);
           // listResult.append(div1);//.append(div2);//.append(div3);
 
-          data_add1 = '<div class="col-6 col-sm-12 col-lg-6">\n<div class="card card--list">\n<div class="row">\n<div class="col-12 col-sm-4">\n<div class="card__cover">\n<img src="' + image + '" alt="">\n<a href="' + link + '" class="card__play">\n<i class="icon ion-ios-play"></i>\n</a>\n</div>\n</div>\n<div class="col-12 col-sm-8">\n<div class="card__content">\n<h3 class="card__title"><a href="#">' + item.name + '</a></h3>\n<span class="card__category">\n<a href="#">' + item.genres + '</a>\n</span>\n<div class="card__wrap">\n<span class="card__rate"><i class="icon ion-ios-star"></i>' + rate_item + '</span>\n<ul class="card__list">\n<li>HD</li>\n<li>16+</li>\n<li><a id="netflix" onclick="gonetflix"><img src="https://cumulus13.github.io/js/img/netflix.svg" style="width: 120px;"></a></li>\n</ul>\n</div>\n<div class="card__description">\n<p>' + item.summary + '</p>\n</div>\n</div>\n</div>\n</div>\n</div>\n</div>'
+          data_add1 = '<div class="col-6 col-sm-12 col-lg-6">\n<div class="card card--list">\n<div class="row">\n<div class="col-12 col-sm-4">\n<div class="card__cover">\n<img src="' + image + '" alt="">\n<a href="' + link + '" class="card__play">\n<i class="icon ion-ios-play"></i>\n</a>\n</div>\n</div>\n<div class="col-12 col-sm-8">\n<div class="card__content">\n<h3 class="card__title"><a href="#">' + item.name + '</a></h3>\n<span class="card__category">\n<a href="#">' + item.genres + '</a>\n</span>\n<div class="card__wrap">\n<span class="card__rate"><i class="icon ion-ios-star"></i>' + rate_item + '</span>\n<ul class="card__list">\n<li>HD</li>\n<li>16+</li>\n<li>EP : ' + episode + '</li>\n<li><a id="netflix" onclick="gonetflix"><img src="https://cumulus13.github.io/img/netflix.svg" style="width: 120px;"></a></li>\n</ul>\n</div>\n<div class="card__description">\n<p>' + item.summary + '</p>\n</div>\n</div>\n</div>\n</div>\n</div>\n</div>'
           
           // data_add2 = '<div class="item">\n<div class="card card--big">\n<div class="card__cover">\n<img src="' + image + '" alt="" style="width: 255px; margin-right: 30px;">\n<a href="#" class="card__play">\n<i class="icon ion-ios-play"></i>\n</a>\n</div>\n<div class="card__content">\n<h3 class="card__title"><a href="#">I Dream in Another Language</a></h3>\n<span class="card__category">\n<a href="#">Action</a>\n<a href="#">Triler</a>\n</span>\n<span class="card__rate"><i class="icon ion-ios-star"></i>8.4</span>\n</div>\n</div>\n</div>'
 
@@ -353,7 +378,11 @@ var search = {
     const keyword = $("#input-search").val();
 
     if (keyword != "") {
-      
+      // let div_search = document.getElementsByClassName('header__search-content');
+      // let form_search = document.getElementsByClassName('header__search header__search--active');
+      // div_search[0].style.display = "none";
+      // form_search[0].classList.remove('header__search header__search--active'); 
+      // form_search[0].classList.add('header__search'); 
       let result = await tvmazeApi.searchShowByName(keyword);
       if (result.length > 0) {
         for (item of result) {
@@ -368,6 +397,19 @@ var search = {
 
           let link = '/detail.html?id=' + item.show.id;
 
+          let episode = "0";
+          try {
+            let episodes = await tvmazeApi.getShowEpisode(item.show.id);
+            console.log("episodes = ", episodes);
+
+            episode = episodes.number;
+            
+          } catch {
+            episode = "0";
+          }
+
+          console.log("episode = ", episode);
+
           let rate_item = "8.7";
           if (item.show.rating.average != "") {
             // rate_item = $('<i class="icon ion-ios-star"></i>').text(item.rating.average);            
@@ -375,11 +417,24 @@ var search = {
           }
 
           if (item.show.rating.average == null) {
-            rate_item = "0.0";
+            rate_item = "0";
+          }
+          
+          let description = ""
+          try{
+            let data_description = await tvmazeApi.getShow(item.show.id);
+            console.log("data_description = ", data_description);
+            description = data_description.summary;
+          } catch {
+            description = ""
           }
 
-          
-          data_add1 = '<div class="col-6 col-sm-12 col-lg-6">\n<div class="card card--list">\n<div class="row">\n<div class="col-12 col-sm-4">\n<div class="card__cover">\n<img src="' + image + '" alt="">\n<a href="' + link + '" class="card__play">\n<i class="icon ion-ios-play"></i>\n</a>\n</div>\n</div>\n<div class="col-12 col-sm-8">\n<div class="card__content">\n<h3 class="card__title"><a href="#">' + item.show.name + '</a></h3>\n<span class="card__category">\n<a href="#">' + item.show.genres + '</a>\n</span>\n<div class="card__wrap">\n<span class="card__rate"><i class="icon ion-ios-star"></i>' + rate_item + '</span>\n<ul class="card__list">\n<li>HD</li>\n<li>16+</li>\n<li><a id="netflix" onclick="gonetflix"><img src="https://cumulus13.github.io/js/img/netflix.svg" style="width: 120px;"></a></li>\n</ul>\n</div>\n<div class="card__description">\n<p>' + item.show.summary + '</p>\n</div>\n</div>\n</div>\n</div>\n</div>\n</div>'
+          if (description == null) {
+            description = "";
+          }
+          console.log("description = ", description);
+
+          data_add1 = '<div class="col-6 col-sm-12 col-lg-6">\n<div class="card card--list">\n<div class="row">\n<div class="col-12 col-sm-4">\n<div class="card__cover">\n<img src="' + image + '" alt="">\n<a href="' + link + '" class="card__play">\n<i class="icon ion-ios-play"></i>\n</a>\n</div>\n</div>\n<div class="col-12 col-sm-8">\n<div class="card__content">\n<h3 class="card__title"><a href="#">' + item.show.name + '</a></h3>\n<span class="card__category">\n<a href="#">' + item.show.genres + '</a>\n</span>\n<div class="card__wrap">\n<span class="card__rate"><i class="icon ion-ios-star"></i>' + rate_item + '</span>\n<ul class="card__list">\n<li>HD</li>\n<li>16+</li>\n<li>EP : ' + episode + '</li>\n<li><a id="netflix" onclick="gonetflix"><img src="https://cumulus13.github.io/img/netflix.svg" style="width: 120px;"></a></li>\n</ul>\n</div>\n<div class="card__description">\n<p>' + description + '</p>\n</div>\n</div>\n</div>\n</div>\n</div>\n</div>'
           
           data_html1 += data_add1;
 
