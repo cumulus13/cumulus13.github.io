@@ -162,3 +162,9 @@ body {
 .gallery-img-container .gallery-item:not(:first-child) {
   margin-left: 1rem;
 }
+
+
+#front_cover {
+  max-width: 270;
+  max-height: 400;
+}

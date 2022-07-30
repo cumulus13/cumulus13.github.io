@@ -39,6 +39,18 @@ var tvmazeApi = {
       });
   },
 
+  getShow(id) {
+    return $.get({
+      url: `${this.baseUrl}/shows/${id}`
+    })
+      .done((res) => {
+        console.log(res);
+      })
+      .fail((err) => {
+        console.log(err);
+      });
+  },
+
   getShowCast(id) {
     return $.get({
       url: `${this.baseUrl}/shows/${id}/cast`
@@ -85,6 +97,31 @@ var tvmazeApi = {
       .fail((err) => {
         console.log(err);
       });
+  },
+
+  getShowUpdateDay() {
+    return $.get({
+      url: `${this.baseUrl}/updates/shows?since=day`,
+      // headers: {
+      //         "accept": "application/json",
+      //         "Access-Control-Allow-Origin":"*",
+      //         'Content-Type': 'application/x-www-form-urlencoded'
+      // },      
+      // xhrFields: {
+      //   withCredentials: true
+      // },
+      // crossDomain: true,
+      // async: true,
+      // cache: false,
+      dataType: "json",
+      // contentType: "application/json",
+    })
+      .done((res) => {
+        console.log("RESPONSE: " + res);
+      })
+      .fail((err) => {
+        console.log(err);
+      });
   }
 };
 
@@ -97,6 +134,7 @@ var search = {
   isShowImage: false,
   init() {
     this.addEvent();
+    this.showUpdate();
   },
 
   addEvent() {
@@ -150,7 +188,117 @@ var search = {
     });
   },
 
-  async searchShow() {
+  async showUpdate() {
+    listResult = $("#results");
+    // listNewSeason = $('#new_items');
+    //delete a previous result
+    listResult.empty();
+    // listNewSeason.empty();
+
+    let result = await tvmazeApi.getShowUpdateDay();
+    console.log("result = ", result);
+
+    let data_html1 = "";
+    let data_html2 = "";
+
+    let div1 = $('<div class="col-6 col-sm-12 col-lg-6"></div>'), 
+        div2 = $('<div class="card card--list">'),
+        div3 = $('<div class="row"></div'),
+        div4 = $('<div class="col-12 col-sm-4"></div'),
+        div5 = $('<div class="card__cover"></div'),
+        cover = $('<img alt="">'),
+        link = $('<a class="card__play"></a'),
+        link_add = $('<i class="icon ion-ios-play"></i'),
+        div6 = $('<div class="col-12 col-sm-8"></div'), 
+        div7 = $('<div class="card__content"></div'), 
+        title_tag = $('<h3 class="card__title"></h3'), 
+        title = $('<a></a');
+        genres = $('<span class="card__category"></span'),
+
+        div8 = $('<div class="card__wrap"></div'), 
+        rate = $('<span class="card__rate"></span'), 
+
+        div9 = $('<div class="card__description"></div');
+
+    console.log("Object.keys(result).length = ", Object.keys(result).length);
+    if (Object.keys(result).length > 0) {
+      console.log("result1 = ", result);      
+      console.log("result2 = ", result['43']);      
+      console.log("result3 = ", Object.keys(result)[0]);      
+      for (u=0;u<10;u++) {
+      // for (mid in result) {
+        mid = Object.keys(result)[u];
+        console.log("result4 = ", Object.keys(result)[u]);      
+        console.log("value = ", result[Object.keys(result)[u]]);
+        console.log("mid = ", mid);
+        let item = await tvmazeApi.getShow(mid);
+        let image = "";
+        let image_large = "";
+        console.log("item = ", item);
+        console.log("item.id = ", item.id);
+        
+           //description start
+              
+          cover.attr("title", `${item.name}`);
+
+          try {
+            // cover.attr("src", `${item.image.medium}`);
+            image = item.image.medium;
+          } catch {
+            image = 'https://static.tvmaze.com/images/no-img/no-img-portrait-clean.png'
+            // cover.attr(
+            //   "src",
+            //   "https://static.tvmaze.com/images/no-img/no-img-portrait-clean.png"
+            // );
+          }
+
+          try {
+            // cover.attr("src", `${item.image.medium}`);
+            image_large = item.image.original;
+          } catch {
+            image_large = 'https://static.tvmaze.com/images/no-img/no-img-portrait-clean.png'
+          }
+
+          // title.attr('href', '/detail.html?id=`${item.id}`').text(item.name);
+          let link = '/detail.html?id=' + item.id;
+          // let genres = [];
+          // if (item.genres.length > 0) {
+            // for (gen in item.genres) {
+              // genres_item = $('<a></a>').text(gen);
+              // genres.append(genres_item);
+
+            // }
+          // }
+
+          let rate_item = "8.7";
+          if (item.rating.average != "") {
+            // rate_item = $('<i class="icon ion-ios-star"></i>').text(item.rating.average);            
+            rate_item = item.rating.average;
+          }
+
+          div9.append(item.summary);
+
+          div7.append(title_tag).append(title).append(genres).append(rate).append(div9);
+
+          div3.append(div4).append(div5).append(cover).append(link_add);
+          div3.append(div6).append(div7);
+          // listResult.append(div1);//.append(div2);//.append(div3);
+
+          data_add1 = '<div class="col-6 col-sm-12 col-lg-6">\n<div class="card card--list">\n<div class="row">\n<div class="col-12 col-sm-4">\n<div class="card__cover">\n<img src="' + image + '" alt="">\n<a href="' + link + '" class="card__play">\n<i class="icon ion-ios-play"></i>\n</a>\n</div>\n</div>\n<div class="col-12 col-sm-8">\n<div class="card__content">\n<h3 class="card__title"><a href="#">' + item.name + '</a></h3>\n<span class="card__category">\n<a href="#">' + item.genres + '</a>\n</span>\n<div class="card__wrap">\n<span class="card__rate"><i class="icon ion-ios-star"></i>' + rate_item + '</span>\n<ul class="card__list">\n<li>HD</li>\n<li>16+</li>\n<li><a id="netflix" onclick="gonetflix"><img src="img/netflix.svg" style="width: 120px;"></a></li>\n</ul>\n</div>\n<div class="card__description">\n<p>' + item.summary + '</p>\n</div>\n</div>\n</div>\n</div>\n</div>\n</div>'
+          
+          // data_add2 = '<div class="item">\n<div class="card card--big">\n<div class="card__cover">\n<img src="' + image + '" alt="" style="width: 255px; margin-right: 30px;">\n<a href="#" class="card__play">\n<i class="icon ion-ios-play"></i>\n</a>\n</div>\n<div class="card__content">\n<h3 class="card__title"><a href="#">I Dream in Another Language</a></h3>\n<span class="card__category">\n<a href="#">Action</a>\n<a href="#">Triler</a>\n</span>\n<span class="card__rate"><i class="icon ion-ios-star"></i>8.4</span>\n</div>\n</div>\n</div>'
+
+          data_html1 += data_add1;
+          // data_html2 += data_add2;
+      }
+      
+      listResult.html(data_html1);
+      // listNewSeason.html(data_html2);
+    }
+    
+  },
+
+  async searchShowA() {
     listResult = $(".list-result");
     //delete a previous result
     listResult.empty();
@@ -161,26 +309,31 @@ var search = {
       if (result.length > 0) {
         for (item of result) {
           console.log(item);
-          let divElement = $("<div></div"),
+          let divElement = $("<div></div>"),
             imgElement = $("<img>"),
-            aElement = $("<a></a>");
+            aElement = $("<a></a>"),
             genres = $("<p></p>");
+
           divElement.addClass("result-item");
+
           aElement
             .addClass("item-title")
             .attr("title", `${item.show.name}`)
             .text(`${item.show.name}`);
-          genres.addClass("item-genres")
-          .text(`${item.show.genres}`);
+
+          genres.addClass("item-genres").text(`${item.show.genres}`);
+
           imgElement.addClass("image-item").attr("title", `${item.show.name}`);
+          
           try {
-            imgElement.attr("src", `${item.show.image.medium}`);
+              imgElement.attr("src", `${item.show.image.medium}`);
           } catch {
             imgElement.attr(
               "src",
               "https://static.tvmaze.com/images/no-img/no-img-portrait-clean.png"
             );
           }
+          
           listResult.append(divElement.append(imgElement).append(aElement).append(genres));
           // add event click for img and a of each show
           imgElement.click(search.getShowDetail.bind(item.show));
@@ -190,6 +343,54 @@ var search = {
         listResult.text("No results found!");
       }
     }
+  },
+
+  async searchShow() {
+    listResult = $("#results");
+    listResult.empty();
+    let data_html1 = "";
+
+    const keyword = $("#input-search").val();
+
+    if (keyword != "") {
+      
+      let result = await tvmazeApi.searchShowByName(keyword);
+      if (result.length > 0) {
+        for (item of result) {
+          console.log(item);
+        
+          let image = "";
+          try {
+              image = item.show.image.medium;
+          } catch {
+            image = "https://static.tvmaze.com/images/no-img/no-img-portrait-clean.png"
+          }
+
+          let link = '/detail.html?id=' + item.show.id;
+
+          let rate_item = "8.7";
+          if (item.show.rating.average != "") {
+            // rate_item = $('<i class="icon ion-ios-star"></i>').text(item.rating.average);            
+            rate_item = item.show.rating.average;
+          }
+
+          if (item.show.rating.average == null) {
+            rate_item = "0.0";
+          }
+
+          
+          data_add1 = '<div class="col-6 col-sm-12 col-lg-6">\n<div class="card card--list">\n<div class="row">\n<div class="col-12 col-sm-4">\n<div class="card__cover">\n<img src="' + image + '" alt="">\n<a href="' + link + '" class="card__play">\n<i class="icon ion-ios-play"></i>\n</a>\n</div>\n</div>\n<div class="col-12 col-sm-8">\n<div class="card__content">\n<h3 class="card__title"><a href="#">' + item.show.name + '</a></h3>\n<span class="card__category">\n<a href="#">' + item.show.genres + '</a>\n</span>\n<div class="card__wrap">\n<span class="card__rate"><i class="icon ion-ios-star"></i>' + rate_item + '</span>\n<ul class="card__list">\n<li>HD</li>\n<li>16+</li>\n<li><a id="netflix" onclick="gonetflix"><img src="img/netflix.svg" style="width: 120px;"></a></li>\n</ul>\n</div>\n<div class="card__description">\n<p>' + item.show.summary + '</p>\n</div>\n</div>\n</div>\n</div>\n</div>\n</div>'
+          
+          data_html1 += data_add1;
+
+        }
+
+        listResult.html(data_html1);
+      } else {
+        listResult.text("No results found!");
+      }
+    }
+    
   },
 
   async getShowDetail() {
